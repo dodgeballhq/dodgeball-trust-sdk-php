@@ -1,0 +1,22 @@
+{
+  "name": "dodgeball/dodgeball-sdk-server",
+  "description": "This library provides functionality for PHP-based server applications to execute checkpoints and track events with the Dodgeball platform.",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Dodgeball\\DodgeballSdkServer\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Patrick Teague",
+      "email": "patrick@dodgeballhq.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.2"
+  }
+}
