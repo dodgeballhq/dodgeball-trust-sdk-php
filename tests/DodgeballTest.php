@@ -1,8 +1,6 @@
 <?php
 namespace Dodgeball\DodgeballSdkServer;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;

@@ -27,16 +27,13 @@ Check out the [Dodgeball Trust Client SDK](https://npmjs.com/package/@dodgeball/
 ## Installation
 Use `composer` to install the Dodgeball module:
 ```sh
-composer require dodgeball/trust-sdk-server
+composer require dodgeball/dodgeball-sdk-server
 ```
 
 ## Usage
 
 ```php
 <?php
-
-require_once __DIR__ . '/vendor/autoload.php';
-
 use Dodgeball\DodgeballSdkServer\Dodgeball;
 
 $dodgeball = new Dodgeball('secret-api-key...');

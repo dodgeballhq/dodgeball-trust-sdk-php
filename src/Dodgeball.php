@@ -1,8 +1,6 @@
 <?php
 namespace Dodgeball\DodgeballSdkServer;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 use Exception;
 
 const BASE_CHECKPOINT_TIMEOUT_MS = 100;
