@@ -235,7 +235,7 @@ class Dodgeball
 {
   protected string $secretKey;
   protected DodgeballConfig $config;
-  protected \GuzzleHttp\HandlerStack $handlerStack;
+  protected ?\GuzzleHttp\HandlerStack $handlerStack = null;
 
   function __construct(string $secretKey, array $options = []) {
     if (!$secretKey) {
