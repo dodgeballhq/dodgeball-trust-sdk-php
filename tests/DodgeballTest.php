@@ -86,6 +86,15 @@ final class DodgeballTest extends TestCase {
     $this->assertEquals($expected, $actual);
   }
 
+  public function testConstructApiHeadersWithNullParams(): void {
+    $expected = [
+      "Dodgeball-Secret-Key" => "secret_key",
+      "Content-Type" => "application/json",
+    ];
+    $actual = $this->dodgeball->constructApiHeaders(null, null, null, "");
+    $this->assertEquals($expected, $actual);
+  }
+
   public function testCreateErrorResponseWithCodeAndMessage(): void {
     $expected = new DodgeballCheckpointResponse(
       false,

@@ -256,7 +256,7 @@ class Dodgeball
     return $this->config->apiUrl . $this->config->apiVersion->value . '/' . $endpoint;
   }
 
-  public function constructApiHeaders(string $verificationId = "", string $sourceToken = "", string $customerId = "", string $sessionId = "") {
+  public function constructApiHeaders(?string $verificationId = "", ?string $sourceToken = "", ?string $customerId = "", string $sessionId = "") {
     $headers = [
       "Dodgeball-Secret-Key" => $this->secretKey,
       "Content-Type" => "application/json",
