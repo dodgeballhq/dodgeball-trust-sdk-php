@@ -171,11 +171,11 @@ final class DodgeballTest extends TestCase {
       'userId' => 'user_id',
       'sessionId' => 'session_id',
       'sourceToken' => 'source_token',
-      'event' => (object) [
+      'event' => [
         'type' => 'EVENT_NAME',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -262,11 +262,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -428,11 +428,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -441,7 +441,7 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
         'timeout' => 12345,
       ],
@@ -593,11 +593,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -606,7 +606,7 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
         'timeout' => 12345,
       ],
@@ -781,11 +781,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -794,7 +794,7 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
         'timeout' => 1000,
       ],
@@ -976,11 +976,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -989,7 +989,7 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
         'timeout' => 1000,
       ],
@@ -1155,6 +1155,7 @@ final class DodgeballTest extends TestCase {
           'outcome' => VerificationOutcome::PENDING,
         ],
       ])),
+      // These requests should not be called...
       new Response(200, ['Content-Type' => 'application/json'], json_encode((object) [
         'success' => true,
         'errors' => [],
@@ -1175,7 +1176,6 @@ final class DodgeballTest extends TestCase {
           'outcome' => VerificationOutcome::PENDING,
         ],
       ])),
-      // This request should not be called
       new Response(200, ['Content-Type' => 'application/json'], json_encode((object) [
         'success' => true,
         'errors' => [],
@@ -1194,11 +1194,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -1207,14 +1207,14 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
-        'timeout' => 1000,
+        'timeout' => 4000,
       ],
     ]);
 
     // Assert the requests
-    $this->assertCount(4, $container);
+    $this->assertCount(2, $container);
 
     // Assert the first request
     $transaction = $container[0];
@@ -1279,34 +1279,6 @@ final class DodgeballTest extends TestCase {
     $responseJsonBody = json_decode($response->getBody());
     $this->assertEquals(true, $responseJsonBody->success);
     $this->assertEquals([], $responseJsonBody->errors);
-
-    // Assert the third request
-    $transaction = $container[2];
-    $request = $transaction['request'];
-    $this->assertEquals('GET', $request->getMethod());
-    $this->assertEquals('https://api.example.com/v1/verification/verification_id', $request->getUri());
-
-    $expectedHeaders = [
-      "Dodgeball-Secret-Key" => "secret_key",
-      "Content-Type" => "application/json",
-      "Dodgeball-Source-Token" => "source_token",
-      "Dodgeball-Customer-Id" => "user_id",
-      "Dodgeball-Session-Id" => "session_id",
-      "Dodgeball-Verification-Id" => "verification_id",
-    ];
-    // Iterate through the expected headers and assert that they are present
-    foreach ($expectedHeaders as $key => $value) {
-      $this->assertEquals($value, $request->getHeader($key)[0]);
-    }
-
-    // Assert the response
-    $response = $transaction['response'];
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseJsonBody = json_decode($response->getBody());
-    $this->assertEquals(true, $responseJsonBody->success);
-    $this->assertEquals([], $responseJsonBody->errors);
-    $this->assertEquals(VerificationStatus::PENDING->value, $responseJsonBody->verification->status);
 
     // Validate that a pending response was returned
     $this->assertEquals(true, $dodgeballCheckpointResponse->success);
@@ -1342,10 +1314,11 @@ final class DodgeballTest extends TestCase {
         'version' => 'v1',
         'verification' => (object) [
           'id' => 'verification_id',
-          'status' => VerificationStatus::PENDING,
+          'status' => VerificationStatus::COMPLETE,
           'outcome' => VerificationOutcome::PENDING,
         ],
       ])),
+      // These requests should not be called...
       new Response(200, ['Content-Type' => 'application/json'], json_encode((object) [
         'success' => true,
         'errors' => [],
@@ -1366,7 +1339,6 @@ final class DodgeballTest extends TestCase {
           'outcome' => VerificationOutcome::PENDING,
         ],
       ])),
-      // This request should not be called
       new Response(200, ['Content-Type' => 'application/json'], json_encode((object) [
         'success' => true,
         'errors' => [],
@@ -1385,11 +1357,11 @@ final class DodgeballTest extends TestCase {
     // Make the call
     $dodgeballCheckpointResponse = $this->dodgeball->checkpoint([
       'checkpointName' => 'CHECKPOINT_NAME',
-      'event' => (object) [
+      'event' => [
         'ip' => '127.0.0.1',
-        'data' => (object) [
+        'data' => [
           'key' => 'value',
-          'nested' => (object) [
+          'nested' => [
             'key' => 'nestedValue',
           ],
         ],
@@ -1398,14 +1370,14 @@ final class DodgeballTest extends TestCase {
       'sessionId' => 'session_id',
       'userId' => 'user_id',
       'useVerificationId' => 'verification_id',
-      'options' => (object) [
+      'options' => [
         'sync' => true,
-        'timeout' => 1000,
+        'timeout' => 2000,
       ],
     ]);
 
     // Assert the requests
-    $this->assertCount(4, $container);
+    $this->assertCount(2, $container);
 
     // Assert the first request
     $transaction = $container[0];
@@ -1470,62 +1442,6 @@ final class DodgeballTest extends TestCase {
     $responseJsonBody = json_decode($response->getBody());
     $this->assertEquals(true, $responseJsonBody->success);
     $this->assertEquals([], $responseJsonBody->errors);
-
-    // Assert the third request
-    $transaction = $container[2];
-    $request = $transaction['request'];
-    $this->assertEquals('GET', $request->getMethod());
-    $this->assertEquals('https://api.example.com/v1/verification/verification_id', $request->getUri());
-
-    $expectedHeaders = [
-      "Dodgeball-Secret-Key" => "secret_key",
-      "Content-Type" => "application/json",
-      "Dodgeball-Source-Token" => "source_token",
-      "Dodgeball-Customer-Id" => "user_id",
-      "Dodgeball-Session-Id" => "session_id",
-      "Dodgeball-Verification-Id" => "verification_id",
-    ];
-    // Iterate through the expected headers and assert that they are present
-    foreach ($expectedHeaders as $key => $value) {
-      $this->assertEquals($value, $request->getHeader($key)[0]);
-    }
-
-    // Assert the response
-    $response = $transaction['response'];
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseJsonBody = json_decode($response->getBody());
-    $this->assertEquals(true, $responseJsonBody->success);
-    $this->assertEquals([], $responseJsonBody->errors);
-    $this->assertEquals(VerificationStatus::PENDING->value, $responseJsonBody->verification->status);
-
-    // Assert the fourth request
-    $transaction = $container[3];
-    $request = $transaction['request'];
-    $this->assertEquals('GET', $request->getMethod());
-    $this->assertEquals('https://api.example.com/v1/verification/verification_id', $request->getUri());
-
-    $expectedHeaders = [
-      "Dodgeball-Secret-Key" => "secret_key",
-      "Content-Type" => "application/json",
-      "Dodgeball-Source-Token" => "source_token",
-      "Dodgeball-Customer-Id" => "user_id",
-      "Dodgeball-Session-Id" => "session_id",
-      "Dodgeball-Verification-Id" => "verification_id",
-    ];
-    // Iterate through the expected headers and assert that they are present
-    foreach ($expectedHeaders as $key => $value) {
-      $this->assertEquals($value, $request->getHeader($key)[0]);
-    }
-
-    // Assert the response
-    $response = $transaction['response'];
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseJsonBody = json_decode($response->getBody());
-    $this->assertEquals(true, $responseJsonBody->success);
-    $this->assertEquals([], $responseJsonBody->errors);
-    $this->assertEquals(VerificationStatus::COMPLETE->value, $responseJsonBody->verification->status);
 
     // Validate that a pending response was returned
     $this->assertEquals(true, $dodgeballCheckpointResponse->success);

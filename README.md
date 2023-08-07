@@ -261,22 +261,22 @@ If a verification encounters an error while processing (such as when a 3rd-party
 ___
 There are several utility methods available to help interpret the checkpoint response. It is strongly advised to use them rather than directly interpreting the checkpoint response.
 
-#### `checkpointResponse.isAllowed()`
+#### `checkpointResponse->isAllowed()`
 The `isAllowed` method returns `true` if the request is allowed to proceed.
 
-#### `checkpointResponse.isDenied()`
+#### `checkpointResponse->isDenied()`
 The `isDenied` method returns `true` if the request is denied and should not be allowed to proceed.
 
-#### `checkpointResponse.isRunning()`
+#### `checkpointResponse->isRunning()`
 The `isRunning` method returns `true` if no determination has been reached on how to proceed. The verification should be returned to the frontend application to gather additional input from the user. See the [useVerification](#useverification) section for more details on use and an end-to-end example.
 
-#### `checkpointResponse.isUndecided()`
+#### `checkpointResponse->isUndecided()`
 The `isUndecided` method returns `true` if the verification has finished and no determination has been reached on how to proceed. See [undecided](#undecided) for more details.
 
-#### `checkpointResponse.hasError()`
+#### `checkpointResponse->hasError()`
 The `hasError` method returns `true` if it contains an error.
 
-#### `checkpointResponse.isTimeout()`
+#### `checkpointResponse->isTimeout()`
 The `isTimeout` method returns `true` if the verification has timed out. At which point it is up to the application to decide how to proceed. 
 
 ### useVerification
@@ -375,18 +375,18 @@ Route::post('/api/orders', function(Request $request) {
     'useVerificationId' => $request->header('x-dodgeball-verification-id'),
   ]);
 
-  if ($checkpointResponse.isAllowed()) {
+  if ($checkpointResponse->isAllowed()) {
     // Proceed with placing the order...
     $placedOrder = app('database')->createOrder($order);
     return response()->json([
       'order' => $placedOrder,
     ]);
-  } else if ($checkpointResponse.isRunning()) {
+  } else if ($checkpointResponse->isRunning()) {
     // If the outcome is pending, send the verification to the frontend to do additional checks (such as MFA, KYC)
     return response()->json([
       'verification' => $checkpointResponse->verification,
     ], 202);
-  } else if ($checkpointResponse.isDenied()) {
+  } else if ($checkpointResponse->isDenied()) {
     // If the request is denied, you can return the verification to the frontend to display a reason message
     return response()->json([
       'verification' => $checkpointResponse->verification,

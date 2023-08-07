@@ -2,8 +2,9 @@
 namespace Dodgeball\DodgeballSdkServer;
 
 use Exception;
+use \Ramsey\Uuid;
 
-const BASE_CHECKPOINT_TIMEOUT_MS = 100;
+const BASE_CHECKPOINT_TIMEOUT_MS = 1000;
 const MAX_TIMEOUT = 10000;
 const MAX_RETRY_COUNT = 3;
 
@@ -256,7 +257,7 @@ class Dodgeball
     return $this->config->apiUrl . $this->config->apiVersion->value . '/' . $endpoint;
   }
 
-  public function constructApiHeaders(?string $verificationId = "", ?string $sourceToken = "", ?string $customerId = "", string $sessionId = "") {
+  public function constructApiHeaders(?string $verificationId = "", ?string $sourceToken = "", ?string $customerId = "", string $sessionId = "", ?string $requestId = "") {
     $headers = [
       "Dodgeball-Secret-Key" => $this->secretKey,
       "Content-Type" => "application/json",
@@ -276,6 +277,10 @@ class Dodgeball
 
     if ($sessionId && $sessionId !== "null" && $sessionId !== "undefined") {
       $headers["Dodgeball-Session-Id"] = $sessionId;
+    }
+
+    if ($requestId && $requestId !== "null" && $requestId !== "undefined") {
+      $headers["Dodgeball-Request-Id"] = $requestId;
     }
 
     return $headers;
@@ -308,9 +313,9 @@ class Dodgeball
 
     if (isset($params['event'])) {
       $event = new TrackEvent(
-        $params['event']->type ?? '',
-        $params['event']->data ?? (object) [],
-        $params['event']->eventTime ?? 0
+        $params['event']['type'] ?? '',
+        (object) ($params['event']['data'] ?? []),
+        $params['event']['eventTime'] ?? 0
       );
     }
 
@@ -348,15 +353,14 @@ class Dodgeball
     return;
   }
 
-  // public function checkpoint(CheckpointParams $params): DodgeballCheckpointResponse {
   public function checkpoint(array $params = []): DodgeballCheckpointResponse {
     $checkpointName = $params['checkpointName'];
 
     $event = new CheckpointEvent();
     if (isset($params['event'])) {
       $event = new CheckpointEvent(
-        $params['event']->ip ?? '',
-        $params['event']->data ?? (object) []
+        $params['event']['ip'] ?? '',
+        (object) ($params['event']['data'] ?? [])
       );
     }
 
@@ -368,9 +372,9 @@ class Dodgeball
     $options = new CheckpointResponseOptions();
     if (isset($params['options'])) {
       $options = new CheckpointResponseOptions(
-        $params['options']->sync ?? true,
-        $params['options']->timeout ?? 0,
-        $params['options']->webhook ?? ''
+        is_null($params['options']['sync']) || !isset($params['options']['sync']) ? true : $params['options']['sync'],
+        $params['options']['timeout'] ?? 0,
+        $params['options']['webhook'] ?? ''
       );
     }
 
@@ -382,7 +386,7 @@ class Dodgeball
     $maximalTimeout = MAX_TIMEOUT;
 
     $internalOptions = (object) [
-      'sync' => $options->sync === null || !isset($options->sync) ? true : $options->sync,
+      'sync' => is_null($options->sync) || !isset($options->sync) ? true : $options->sync,
       'timeout' => $activeTimeout,
       'webhook' => $options->webhook ?? '',
     ];
@@ -427,39 +431,74 @@ class Dodgeball
     // Convert timeout from milliseconds to seconds
     $timeout = $internalOptions->timeout / 1000 ?? 0;
     $client = new \GuzzleHttp\Client($this->handlerStack ? [ 'handler' => $this->handlerStack ] : []);
+    $lastErrors = [];
+    $requestId = Uuid\Uuid::uuid4()->toString();
 
     while ((is_null($responseJson) || !$responseJson->success) && $numRepeats < 3) {
-      // Construct a new Guzzle client and make a POST request to the Dodgeball API
-      $response = $client->post($this->constructApiUrl('checkpoint'), [
-        'headers' => $this->constructApiHeaders(
-          $useVerificationId,
-          $sourceToken,
-          $userId,
-          $sessionId
-        ),
-        \GuzzleHttp\RequestOptions::JSON => [
-          'checkpointName' => $checkpointName,
-          'event' => [
-            'type' => $checkpointName,
-            'ip' => $event->ip,
-            'data' => $event->data,
+      try {
+        // Construct a new Guzzle client and make a POST request to the Dodgeball API
+        $response = $client->post($this->constructApiUrl('checkpoint'), [
+          'headers' => $this->constructApiHeaders(
+            $useVerificationId,
+            $sourceToken,
+            $userId,
+            $sessionId,
+            $requestId
+          ),
+          \GuzzleHttp\RequestOptions::JSON => [
+            'checkpointName' => $checkpointName,
+            'event' => [
+              'type' => $checkpointName,
+              'ip' => $event->ip,
+              'data' => $event->data,
+            ],
+            'options' => $internalOptions,
           ],
-          'options' => $internalOptions,
-        ],
-        \GuzzleHttp\RequestOptions::TIMEOUT => $timeout
-      ]);
+          \GuzzleHttp\RequestOptions::TIMEOUT => $timeout
+        ]);
 
-      if ($response) {
-        $responseBody = $response->getBody();
-        $responseJson = json_decode($responseBody);
+        if ($response) {
+          $responseBody = $response->getBody();
+          $responseJson = json_decode($responseBody);
+        }
+      } catch (\Exception $e) {
+        $lastErrors = [
+          (object) [
+            'code' => 503,
+            'message' => $e->getMessage(),
+          ],
+        ];
       }
 
       $numRepeats += 1;
     }
 
-    if ($response == null) {
-      return $this->createErrorResponse();
-    } else if ($response->getStatusCode() !== 200) {
+    if (is_null($response)) {
+      $lastErrorMessage = $lastErrors[0]->message ?? "Unknown evaluation error";
+      // If the last error was a timeout, return a timeout response
+      if (strpos($lastErrorMessage, 'timed out') !== false) {
+        $timeoutResponse = new DodgeballCheckpointResponse(
+          false,
+          [
+            (object) [
+              'code' => 503,
+              'message' => "Service Unavailable: Maximum retry count exceeded",
+            ],
+          ],
+          DodgeballApiVersion::v1,
+          new DodgeballVerification(
+            "DODGEBALL_TIMEOUT",
+            VerificationStatus::FAILED,
+            VerificationOutcome::ERROR
+          ),
+          true
+        );
+
+        return $timeoutResponse;
+      } else {
+        return $this->createErrorResponse($lastErrors[0]->code ?? 500, $lastErrors[0]->message ?? "Unknown evaluation error");
+      }
+    } else if ($response->getStatusCode() !== 200 && $response->getStatusCode() !== 201) {
       return $this->createErrorResponse($response->getStatusCode(), $response->getReasonPhrase());
     }
 
@@ -496,62 +535,95 @@ class Dodgeball
       !$isResolved &&
       $numFailures < MAX_RETRY_COUNT
     ) {
-      if ($activeTimeout >= 1000) {
-        $secondsToSleep = floor($activeTimeout / 1000);
-        $microsecondsToSleep = ($activeTimeout - ($secondsToSleep * 1000)) * 1000;
-        sleep($secondsToSleep);
-        usleep($microsecondsToSleep);
-      } else {
-        usleep($activeTimeout * 1000);
-      }
+      try {
+        if ($activeTimeout >= 1000) {
+          $secondsToSleep = floor($activeTimeout / 1000);
+          $microsecondsToSleep = ($activeTimeout - ($secondsToSleep * 1000)) * 1000;
+          sleep($secondsToSleep);
+          usleep($microsecondsToSleep);
+        } else {
+          usleep($activeTimeout * 1000);
+        }
 
-      $activeTimeout =
-        $activeTimeout < $maximalTimeout ? 2 * $activeTimeout : $activeTimeout;
+        $activeTimeout =
+          $activeTimeout < $maximalTimeout ? 2 * $activeTimeout : $activeTimeout;
 
-      $response = $client->get($this->constructApiUrl('verification/' . $verificationId), [
-        'headers' => $this->constructApiHeaders(
-          $useVerificationId,
-          $sourceToken,
-          $userId,
-          $sessionId
-        ),
-      ]);
+        $response = $client->get($this->constructApiUrl('verification/' . $verificationId), [
+          'headers' => $this->constructApiHeaders(
+            $useVerificationId,
+            $sourceToken,
+            $userId,
+            $sessionId
+          ),
+        ]);
 
-      if ($response) {
-        $responseBody = $response->getBody();
-        $responseJson = json_decode($responseBody);
+        if ($response) {
+          $responseBody = $response->getBody();
+          $responseJson = json_decode($responseBody);
 
-        if ($responseJson->success) {
-          $status = $responseJson->verification->status ?? "";
-          
-          if ($status) {
-            $isResolved = $status !== VerificationStatus::PENDING->value;
-            $numRepeats += 1;
+          if ($responseJson->success) {
+            $status = $responseJson->verification->status ?? "";
+            
+            if ($status) {
+              $isResolved = $status !== VerificationStatus::PENDING->value;
+              $numRepeats += 1;
+            } else {
+              $numFailures += 1;
+            }
           } else {
+            $lastErrors = $responseJson->errors ?? [];
             $numFailures += 1;
           }
         } else {
-          $lastErrors = $responseJson->errors ?? [];
           $numFailures += 1;
         }
-      } else {
+      } catch (\Exception $e) {
+        $lastErrors = [
+          (object) [
+            'code' => 503,
+            'message' => $e->getMessage(),
+          ],
+        ];
         $numFailures += 1;
       }
     }
 
     if ($numFailures >= MAX_RETRY_COUNT) {
+      $lastErrorMessage = $lastErrors[0]->message ?? "Unknown evaluation error";
+
       if (count($lastErrors) > 0) {
-        return new DodgeballCheckpointResponse(
-          false,
-          $lastErrors,
-          DodgeballApiVersion::v1,
-          new DodgeballVerification(
-            $verificationId,
-            VerificationStatus::FAILED,
-            VerificationOutcome::ERROR
-          ),
-          false
-        );
+        if (strpos($lastErrorMessage, 'timed out') !== false) {
+          $timeoutResponse = new DodgeballCheckpointResponse(
+            false,
+            [
+              (object) [
+                'code' => 503,
+                'message' => "Service Unavailable: Maximum retry count exceeded",
+              ],
+            ],
+            DodgeballApiVersion::v1,
+            new DodgeballVerification(
+              $verificationId,
+              VerificationStatus::FAILED,
+              VerificationOutcome::ERROR
+            ),
+            true
+          );
+
+          return $timeoutResponse;
+        } else {
+          return new DodgeballCheckpointResponse(
+            false,
+            $lastErrors,
+            DodgeballApiVersion::v1,
+            new DodgeballVerification(
+              $verificationId,
+              VerificationStatus::FAILED,
+              VerificationOutcome::ERROR
+            ),
+            false
+          );
+        }
       } else {
         $timeoutResponse = new DodgeballCheckpointResponse(
           false,
