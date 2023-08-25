@@ -109,8 +109,8 @@ const $checkpointResponse = $dodgeball->checkpoint({
 | `event` | `true` | The event to send to the checkpoint. |
 | `event.ip` | `true` | The IP address of the device where the request originated. |
 | `event.data` | `false` | Object containing arbitrary data to send in to the checkpoint. |
-| `sourceToken` | `false` | A Dodgeball generated token representing the device making the request. Obtained from the [Dodgeball Trust Client SDK](https://npmjs.com/package/@dodgeball/trust-sdk-client). |
-| `sessionId` | `true` | The current session ID of the request. |
+| `sourceToken` | `Either a sessionId or sourceToken must be provided` | A Dodgeball generated token representing the device making the request. Obtained from the [Dodgeball Trust Client SDK](https://npmjs.com/package/@dodgeball/trust-sdk-client). |
+| `sessionId` | `Either a sessionId or sourceToken must be provided` | The current session ID of the request. |
 | `userId` | `false` | When you know the ID representing the user making the request in your database (ie after registration), pass it in here. Otherwise leave it blank. |
 | `useVerificationId` | `false` | If a previous verification was performed on this request, pass it in here. See the [useVerification](#useverification) section below for more details. |
 
@@ -314,8 +314,8 @@ $dodgeball->event([
 | `event` | `true` | The event to track. |
 | `event.type` | `true` | A name representing where in the journey the user is. |
 | `event.data` | `false` | Object containing arbitrary data to track. |
-| `sourceToken` | `false` | A Dodgeball generated token representing the device making the request. Obtained from the [Dodgeball Trust Client SDK](https://npmjs.com/package/@dodgeball/trust-sdk-client). |
-| `sessionId` | `true` | The current session ID of the request. |
+| `sourceToken` | `Either a sessionId or sourceToken must be provided` | A Dodgeball generated token representing the device making the request. Obtained from the [Dodgeball Trust Client SDK](https://npmjs.com/package/@dodgeball/trust-sdk-client). |
+| `sessionId` | `Either a sessionId or sourceToken must be provided` | The current session ID of the request. |
 | `userId` | `false` | When you know the ID representing the user making the request in your database (ie after registration), pass it in here. Otherwise leave it blank. |
 
 #### End-to-End Example

@@ -410,8 +410,8 @@ class Dodgeball
       throw new DodgeballMissingParameterError("event.ip", $event->ip);
     }
 
-    if ($sessionId == null) {
-      throw new DodgeballMissingParameterError("sessionId", $sessionId);
+    if ($sessionId == null && $sourceToken == null) {
+      throw new DodgeballMissingParameterError("Must provide either a sessionId or sourceToken", "sessionId = " . $sessionId . ", sourceToken = " . $sourceToken);
     }
 
     if (!$this->config->isEnabled) {
