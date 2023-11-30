@@ -8,34 +8,73 @@ const BASE_CHECKPOINT_TIMEOUT_MS = 1000;
 const MAX_TIMEOUT = 10000;
 const MAX_RETRY_COUNT = 3;
 
-enum DodgeballApiVersion: string {
-  case v1 = 'v1';
+class DodgeballApiVersion {
+  const v1 = 'v1';
+
+  public static function fromString($version) {
+    switch ($version) {
+      case 'v1':
+        return DodgeballApiVersion::v1;
+      default:
+        return DodgeballApiVersion::v1;
+    }
+  }
 }
 
-enum VerificationStatus: string {
-  case PENDING = 'PENDING';
-  case BLOCKED = 'BLOCKED';
-  case COMPLETE = 'COMPLETE';
-  case FAILED = 'FAILED';
+class VerificationStatus {
+  const PENDING = 'PENDING';
+  const BLOCKED = 'BLOCKED';
+  const COMPLETE = 'COMPLETE';
+  const FAILED = 'FAILED';
+
+  public static function fromString($status) {
+    switch ($status) {
+      case 'PENDING':
+        return VerificationStatus::PENDING;
+      case 'BLOCKED':
+        return VerificationStatus::BLOCKED;
+      case 'COMPLETE':
+        return VerificationStatus::COMPLETE;
+      case 'FAILED':
+        return VerificationStatus::FAILED;
+      default:
+        return VerificationStatus::FAILED;
+    }
+  }
 }
 
-enum VerificationOutcome: string {
-  case APPROVED = 'APPROVED';
-  case DENIED = 'DENIED';
-  case PENDING = 'PENDING';
-  case ERROR = 'ERROR';
+class VerificationOutcome {
+  const APPROVED = 'APPROVED';
+  const DENIED = 'DENIED';
+  const PENDING = 'PENDING';
+  const ERROR = 'ERROR';
+
+  public static function fromString($outcome) {
+    switch ($outcome) {
+      case 'APPROVED':
+        return VerificationOutcome::APPROVED;
+      case 'DENIED':
+        return VerificationOutcome::DENIED;
+      case 'PENDING':
+        return VerificationOutcome::PENDING;
+      case 'ERROR':
+        return VerificationOutcome::ERROR;
+      default:
+        return VerificationOutcome::ERROR;
+    }
+  }
 }
 
 class DodgeballConfig
 {
-  public string $apiUrl = 'https://api.dodgeballhq.com/';
-  public DodgeballApiVersion $apiVersion = DodgeballApiVersion::v1;
-  public bool $isEnabled = true;
+  public $apiUrl = 'https://api.dodgeballhq.com/';
+  public $apiVersion = DodgeballApiVersion::v1;
+  public $isEnabled = true;
 
   // All properties are optional parameters to the constructor
   function __construct(
     string $apiUrl = null,
-    DodgeballApiVersion $apiVersion = null,
+    string $apiVersion = null,
     bool $isEnabled = true
   ) {
     if ($apiVersion) {
@@ -57,10 +96,10 @@ class DodgeballConfig
 
 class EventParams
 {
-  public string $userId = '';
-  public string $sessionId = '';
-  public string $sourceToken = '';
-  public TrackEvent $event;
+  public $userId = '';
+  public $sessionId = '';
+  public $sourceToken = '';
+  public $event;
 
   function __construct(
     string $userId = '',
@@ -77,9 +116,9 @@ class EventParams
 
 class TrackEvent
 {
-  public string $type = '';
-  public int $eventTime = 0;
-  public object $data;
+  public $type = '';
+  public $eventTime = 0;
+  public $data;
 
   function __construct(string $type = '', object $data = null, int $eventTime = 0) {
     if (!$eventTime) {
@@ -94,8 +133,8 @@ class TrackEvent
 
 class CheckpointEvent
 {
-  public string $ip = '';
-  public object $data;
+  public $ip = '';
+  public $data;
 
   function __construct(string $ip = '', object $data = null) {
     $this->ip = $ip;
@@ -105,9 +144,9 @@ class CheckpointEvent
 
 class CheckpointResponseOptions
 {
-  public bool $sync = true;
-  public int $timeout = 0;
-  public string $webhook = '';
+  public $sync = true;
+  public $timeout = 0;
+  public $webhook = '';
 
   function __construct(bool $sync = true, int $timeout = 0, string $webhook = '') {
     $this->sync = $sync;
@@ -118,13 +157,13 @@ class CheckpointResponseOptions
 
 class CheckpointParams
 {
-  public string $checkpointName = '';
-  public CheckpointEvent $event;
-  public string $sourceToken = '';
-  public string $sessionId = '';
-  public string $userId = '';
-  public string $useVerificationId = '';
-  public CheckpointResponseOptions $options;
+  public $checkpointName = '';
+  public $event;
+  public $sourceToken = '';
+  public $sessionId = '';
+  public $userId = '';
+  public $useVerificationId = '';
+  public $options;
 
   function __construct(string $checkpointName, CheckpointEvent $event, string $sourceToken = '', string $sessionId = '', string $userId = '', string $useVerificationId = '', CheckpointResponseOptions $options = null) {
     $this->checkpointName = $checkpointName;
@@ -146,11 +185,11 @@ class DodgeballMissingParameterError extends Exception
 
 class DodgeballVerification
 {
-  public string $id = '';
-  public VerificationStatus $status = VerificationStatus::PENDING;
-  public VerificationOutcome $outcome = VerificationOutcome::PENDING;
+  public $id = '';
+  public $status = VerificationStatus::PENDING;
+  public $outcome = VerificationOutcome::PENDING;
 
-  function __construct(string $id = '', VerificationStatus $status = VerificationStatus::PENDING, VerificationOutcome $outcome = VerificationOutcome::PENDING) {
+  function __construct(string $id = '', string $status = VerificationStatus::PENDING, string $outcome = VerificationOutcome::PENDING) {
     $this->id = $id;
     $this->status = $status;
     $this->outcome = $outcome;
@@ -159,13 +198,13 @@ class DodgeballVerification
 
 class DodgeballCheckpointResponse
 {
-  public bool $success = false;
-  public array $errors = [];
-  public DodgeballApiVersion $version = DodgeballApiVersion::v1;
-  public DodgeballVerification $verification;
-  public bool $isTimeout = false;
+  public $success = false;
+  public $errors = [];
+  public $version = DodgeballApiVersion::v1;
+  public $verification;
+  public $isTimeout = false;
 
-  function __construct(bool $success = false, array $errors = [], DodgeballApiVersion $version = DodgeballApiVersion::v1, DodgeballVerification $verification = null, bool $isTimeout = false) {
+  function __construct(bool $success = false, array $errors = [], string $version = DodgeballApiVersion::v1, DodgeballVerification $verification = null, bool $isTimeout = false) {
     $this->success = $success;
     $this->errors = $errors;
     $this->version = $version;
@@ -234,19 +273,30 @@ class DodgeballCheckpointResponse
 
 class Dodgeball
 {
-  protected string $secretKey;
-  protected DodgeballConfig $config;
-  protected ?\GuzzleHttp\HandlerStack $handlerStack = null;
+  protected $secretKey;
+  protected $config;
+  protected $handlerStack = null;
 
   function __construct(string $secretKey, array $options = []) {
     if (!$secretKey) {
       throw new DodgeballMissingParameterError('secretKey', $secretKey);
     }
 
+    $apiVersion = null;
+    $optionsVersion = null;
+
+    if (array_key_exists('apiVersion', $options)) {
+      $optionsVersion = $options['apiVersion'];
+    }
+
+    if (property_exists('DodgeballApiVersion', $optionsVersion)) {
+      $apiVersion = DodgeballApiVersion::$$optionsVersion;
+    }
+
     // Default config if not provided
     $config = new DodgeballConfig(
       $options['apiUrl'] ?? null,
-      $options['apiVersion'] ?? null,
+      $apiVersion,
       $options['isEnabled'] ?? true
     );
     $this->secretKey = $secretKey;
@@ -254,7 +304,7 @@ class Dodgeball
   }
   
   public function constructApiUrl(string $endpoint = ''): string {
-    return $this->config->apiUrl . $this->config->apiVersion->value . '/' . $endpoint;
+    return $this->config->apiUrl . $this->config->apiVersion . '/' . $endpoint;
   }
 
   public function constructApiHeaders(?string $verificationId = "", ?string $sourceToken = "", ?string $customerId = "", string $sessionId = "", ?string $requestId = "") {
@@ -506,14 +556,19 @@ class Dodgeball
     $responseJson = json_decode($responseBody);
 
     if (!$responseJson->success) {
+      $responseVerificationStatus = !is_null($responseJson->verification) ? $responseJson->verification->status : VerificationStatus::FAILED;
+      $responseVerificationOutcome = !is_null($responseJson->verification) ? $responseJson->verification->outcome : VerificationOutcome::ERROR;
+
+      $responseVersion = !is_null($responseJson->version) ? $responseJson->version : DodgeballApiVersion::v1;
+
       return new DodgeballCheckpointResponse(
         false,
         $responseJson->errors ?? [],
-        DodgeballApiVersion::from($responseJson->version),
+        DodgeballApiVersion::fromString($responseVersion),
         new DodgeballVerification(
           $responseJson->verification->id ?? "",
-          !is_null($responseJson->verification) && $responseJson->verification->status ? VerificationStatus::from($responseJson->verification->status) : VerificationStatus::FAILED,
-          !is_null($responseJson->verification) && $responseJson->verification->outcome ? VerificationOutcome::from($responseJson->verification->outcome) : VerificationOutcome::ERROR
+          VerificationStatus::fromString($responseVerificationStatus),
+          VerificationOutcome::fromString($responseVerificationOutcome)
         ),
         false
       );
@@ -521,7 +576,7 @@ class Dodgeball
 
     $status = $responseJson->verification->status ?? "";
     $outcome = $responseJson->verification->outcome ?? "";
-    $isResolved = $status !== VerificationStatus::PENDING->value;
+    $isResolved = $status !== VerificationStatus::PENDING;
     $verificationId = $responseJson->verification->id ?? "";
 
     $numFailures = 0;
@@ -565,7 +620,7 @@ class Dodgeball
             $status = $responseJson->verification->status ?? "";
             
             if ($status) {
-              $isResolved = $status !== VerificationStatus::PENDING->value;
+              $isResolved = $status !== VerificationStatus::PENDING;
               $numRepeats += 1;
             } else {
               $numFailures += 1;
@@ -646,14 +701,17 @@ class Dodgeball
       }
     }
 
+    $responseVerificationStatus = !is_null($responseJson->verification) ? $responseJson->verification->status : VerificationStatus::FAILED;
+    $responseVerificationOutcome = !is_null($responseJson->verification) ? $responseJson->verification->outcome : VerificationOutcome::ERROR;
+
     return new DodgeballCheckpointResponse(
       true,
       [],
       DodgeballApiVersion::v1,
       new DodgeballVerification(
         $responseJson->verification->id ?? "",
-        !is_null($responseJson->verification) && $responseJson->verification->status ? VerificationStatus::from($responseJson->verification->status) : VerificationStatus::FAILED,
-        !is_null($responseJson->verification) && $responseJson->verification->outcome ? VerificationOutcome::from($responseJson->verification->outcome) : VerificationOutcome::ERROR
+        VerificationStatus::fromString($responseVerificationStatus),
+        VerificationOutcome::fromString($responseVerificationOutcome)
       ),
       false
     );

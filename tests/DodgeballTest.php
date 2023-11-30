@@ -370,7 +370,7 @@ final class DodgeballTest extends TestCase {
     $responseJsonBody = json_decode($response->getBody());
     $this->assertEquals(true, $responseJsonBody->success);
     $this->assertEquals([], $responseJsonBody->errors);
-    $this->assertEquals(VerificationStatus::COMPLETE->value, $responseJsonBody->verification->status);
+    $this->assertEquals(VerificationStatus::COMPLETE, $responseJsonBody->verification->status);
 
     // Validate that an successful response was returned
     $this->assertEquals(true, $dodgeballCheckpointResponse->success);
@@ -540,7 +540,7 @@ final class DodgeballTest extends TestCase {
     $responseJsonBody = json_decode($response->getBody());
     $this->assertEquals(true, $responseJsonBody->success);
     $this->assertEquals([], $responseJsonBody->errors);
-    $this->assertEquals(VerificationStatus::COMPLETE->value, $responseJsonBody->verification->status);
+    $this->assertEquals(VerificationStatus::COMPLETE, $responseJsonBody->verification->status);
 
     // Validate that an successful response was returned
     $this->assertEquals(true, $dodgeballCheckpointResponse->success);
